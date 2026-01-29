@@ -166,6 +166,9 @@
     let currentPage = 0;
     const pageSize = 20;
     let isAutoPlaying = false;
+    const speechMsg = new SpeechSynthesisUtterance();
+    speechMsg.lang = 'en-US';
+    speechMsg.rate = 0.75;
 
     function render() {
         stopAutoPlay();
@@ -230,25 +233,20 @@
     }
 
     function speak(text, callback) {
-        const targetText = text.includes('/') ? text.split('/')[0] : text;
-        const msg = new SpeechSynthesisUtterance(targetText);
-        msg.lang = 'en-US';
-        msg.rate = 0.75; // 読み上げ速度
-        msg.onend = callback;
-        speechSynthesis.speak(msg);
+        // Silk対策: スラッシュがある場合は最初の単語のみ抽出して読む
+        const cleanText = text.split('/')[0].trim();
+        speechMsg.text = cleanText;
+        speechMsg.onend = () => { if(callback) callback(); };
+        speechSynthesis.speak(speechMsg);
     }
 
     async function speakTriple(v1, v2, v3, callback) {
         speechSynthesis.cancel();
-        const innerDelay = 500; // ここで単語間の待ち時間を調整
+        const innerDelay = 400;
 
-        await new Promise(r => speak(v1, r));
-        await new Promise(r => setTimeout(r, innerDelay));
-        
-        await new Promise(r => speak(v2, r));
-        await new Promise(r => setTimeout(r, innerDelay));
-        
-        await new Promise(r => speak(v3, r));
+        await new Promise(r => speak(v1, () => setTimeout(r, innerDelay)));
+        await new Promise(r => speak(v2, () => setTimeout(r, innerDelay)));
+        await new Promise(r => speak(v3, () => setTimeout(r, innerDelay)));
         
         if(callback) callback();
     }
