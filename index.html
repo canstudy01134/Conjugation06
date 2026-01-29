@@ -242,7 +242,7 @@
 
     async function speakTriple(v1, v2, v3, callback) {
         speechSynthesis.cancel();
-        const innerDelay = 400;
+        const innerDelay = 500;
 
         await new Promise(r => speak(v1, () => setTimeout(r, innerDelay)));
         await new Promise(r => speak(v2, () => setTimeout(r, innerDelay)));
